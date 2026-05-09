@@ -5,9 +5,9 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Protocol Panic/Scenes/MainMenu.scene.unity
+    guid: 0f6e101b7a778244680e9443dfcbe79c
   - enabled: 1
     path: Assets/Protocol Panic/Scenes/Game.scene.unity
     guid: b4e3dc6c73d22894198641e1a0708c13
