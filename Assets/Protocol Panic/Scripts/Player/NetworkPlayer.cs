@@ -175,9 +175,26 @@ public class NetworkPlayer : NetworkBehaviour
 
     private void Interact()
     {
-        if (_nearbyMixer != null &&
-            HeldIngredient != IngredientType.None)
+        if (_nearbyMixer != null)
         {
+
+            if (HeldIngredient ==
+                IngredientType.None)
+            {
+                if (_nearbyMixer.CurrentColor !=
+                    IngredientType.None)
+                {
+                    HeldIngredient =
+                        _nearbyMixer.CurrentColor;
+
+                    _nearbyMixer.CurrentColor =
+                        IngredientType.None;
+                }
+
+                return;
+            }
+
+
             bool success =
                 _nearbyMixer.TryAddIngredient(
                     HeldIngredient
@@ -190,6 +207,7 @@ public class NetworkPlayer : NetworkBehaviour
 
             return;
         }
+
 
         if (_nearbyDispenser != null)
         {
