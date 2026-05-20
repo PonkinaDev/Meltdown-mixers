@@ -33,6 +33,8 @@ public class NetworkPlayer : NetworkBehaviour
 
     private PotionMixer _nearbyMixer;
 
+    private DeliveryZone _nearbyDeliveryZone;
+
     private float _pickupCooldown = 0f;
 
     public override void Spawned()
@@ -76,6 +78,8 @@ public class NetworkPlayer : NetworkBehaviour
         DetectNearbyDispenser();
 
         DetectNearbyMixer();
+
+        DetectNearbyDeliveryZone();
 
         _pickupCooldown -= Runner.DeltaTime;
 
@@ -173,11 +177,55 @@ public class NetworkPlayer : NetworkBehaviour
         }
     }
 
+    private void DetectNearbyDeliveryZone()
+    {
+        _nearbyDeliveryZone = null;
+
+        Collider[] hits =
+            Physics.OverlapSphere(
+                transform.position,
+                _interactionRadius
+            );
+
+        foreach (Collider hit in hits)
+        {
+            DeliveryZone zone =
+                hit.GetComponent<DeliveryZone>();
+
+            if (zone != null)
+            {
+                _nearbyDeliveryZone = zone;
+                return;
+            }
+        }
+    }
+
     private void Interact()
     {
+        if (_nearbyDeliveryZone != null)
+        {
+            if (HeldIngredient !=
+                IngredientType.None)
+            {
+                if (OrderManager.Instance != null)
+                {
+                    bool success =
+                        OrderManager.Instance.TryDeliver(
+                            HeldIngredient
+                        );
+
+                    if (success)
+                    {
+                        ClearIngredient();
+                    }
+                }
+            }
+
+            return;
+        }
+
         if (_nearbyMixer != null)
         {
-
             if (HeldIngredient ==
                 IngredientType.None)
             {
@@ -194,7 +242,6 @@ public class NetworkPlayer : NetworkBehaviour
                 return;
             }
 
-
             bool success =
                 _nearbyMixer.TryAddIngredient(
                     HeldIngredient
@@ -207,7 +254,6 @@ public class NetworkPlayer : NetworkBehaviour
 
             return;
         }
-
 
         if (_nearbyDispenser != null)
         {

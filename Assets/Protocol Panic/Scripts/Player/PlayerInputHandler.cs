@@ -14,14 +14,11 @@ public class PlayerInputHandler :
 
     private void Update()
     {
-        // Movimiento
         _moveInput = new Vector2(
             Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical")
         );
 
-        // IMPORTANTE:
-        // GetKey en vez de GetKeyDown
         _pickupPressed =
             Input.GetKey(KeyCode.E);
     }
@@ -40,10 +37,6 @@ public class PlayerInputHandler :
 
         input.Set(data);
     }
-
-    // ─────────────────────────
-    // CALLBACKS VACÍOS
-    // ─────────────────────────
 
     void INetworkRunnerCallbacks.OnPlayerJoined(NetworkRunner runner, PlayerRef player) { }
     void INetworkRunnerCallbacks.OnPlayerLeft(NetworkRunner runner, PlayerRef player) { }
