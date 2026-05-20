@@ -244,6 +244,7 @@ GameObject:
   - component: {fileID: 503711968}
   - component: {fileID: 503711967}
   - component: {fileID: 503711966}
+  - component: {fileID: 503711970}
   m_Layer: 0
   m_Name: DispenserBlue
   m_TagString: Untagged
@@ -338,12 +339,25 @@ Transform:
   m_GameObject: {fileID: 503711965}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6, y: 1.426, z: 12.1}
+  m_LocalPosition: {x: -6, y: 1.426, z: 11.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &503711970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 503711965}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19885cf8e6683b04ca3bfe0f15a2d516, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IngredientDispenser
+  _ingredientType: 2
 --- !u!1 &759833639
 GameObject:
   m_ObjectHideFlags: 0
@@ -992,7 +1006,7 @@ Transform:
   m_GameObject: {fileID: 1301291194}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.0141, y: 0.43, z: -0.3}
+  m_LocalPosition: {x: 0.0141, y: 0.43, z: -2.77}
   m_LocalScale: {x: 14.3, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1010,6 +1024,7 @@ GameObject:
   - component: {fileID: 1449123566}
   - component: {fileID: 1449123565}
   - component: {fileID: 1449123564}
+  - component: {fileID: 1449123568}
   m_Layer: 0
   m_Name: DispenserGreen
   m_TagString: Untagged
@@ -1104,12 +1119,25 @@ Transform:
   m_GameObject: {fileID: 1449123563}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8, y: 1.426, z: 12.1}
+  m_LocalPosition: {x: -8, y: 1.426, z: 11.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1449123568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1449123563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19885cf8e6683b04ca3bfe0f15a2d516, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IngredientDispenser
+  _ingredientType: 5
 --- !u!1 &1628659023
 GameObject:
   m_ObjectHideFlags: 0
@@ -1346,6 +1374,7 @@ GameObject:
   - component: {fileID: 1680619152}
   - component: {fileID: 1680619151}
   - component: {fileID: 1680619150}
+  - component: {fileID: 1680619154}
   m_Layer: 0
   m_Name: DispenserRed
   m_TagString: Untagged
@@ -1440,12 +1469,25 @@ Transform:
   m_GameObject: {fileID: 1680619149}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -10, y: 1.426, z: 12.1}
+  m_LocalPosition: {x: -10, y: 1.426, z: 11.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1680619154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1680619149}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19885cf8e6683b04ca3bfe0f15a2d516, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IngredientDispenser
+  _ingredientType: 1
 --- !u!1 &1789425581
 GameObject:
   m_ObjectHideFlags: 0
@@ -1820,7 +1862,7 @@ GameObject:
   - component: {fileID: 2110698882}
   - component: {fileID: 2110698881}
   m_Layer: 0
-  m_Name: Mixer3 (1)
+  m_Name: Send
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1932,10 +1974,10 @@ SceneRoots:
   - {fileID: 1678677793}
   - {fileID: 1072880435}
   - {fileID: 1301291198}
-  - {fileID: 1680619153}
   - {fileID: 1824975908}
   - {fileID: 1145490121}
   - {fileID: 1789425585}
   - {fileID: 2110698884}
+  - {fileID: 1680619153}
   - {fileID: 1449123567}
   - {fileID: 503711969}

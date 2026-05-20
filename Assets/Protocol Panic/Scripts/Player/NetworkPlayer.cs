@@ -7,6 +7,12 @@ public class NetworkPlayer : NetworkBehaviour
     [Header("Movement")]
     [SerializeField] private float _moveSpeed = 5f;
 
+    [Header("Hold")]
+    [SerializeField] private Transform _holdPoint;
+
+    [Header("Interaction")]
+    [SerializeField] private float _interactionRadius = 1.5f;
+
     private CharacterController _cc;
 
     [Networked]
@@ -15,25 +21,35 @@ public class NetworkPlayer : NetworkBehaviour
     [Networked]
     private Quaternion NetworkedRotation { get; set; }
 
+    [Networked]
+    public IngredientType HeldIngredient { get; set; }
+
+    private GameObject _heldVisual;
+
+    private IngredientType _lastVisualIngredient =
+        IngredientType.None;
+
+    // DISPENSADOR ACTUAL
+    private IngredientDispenser _nearbyDispenser;
+
     public override void Spawned()
     {
         _cc = GetComponent<CharacterController>();
 
-        gameObject.name = HasInputAuthority
-            ? "[Local] Player"
-            : "[Remote] Player";
+        UpdateHeldVisual();
     }
 
     public override void FixedUpdateNetwork()
     {
-        // IMPORTANTE:
-        // SOLO el HOST mueve personajes
         if (!HasStateAuthority)
             return;
 
-        // Obtenemos input del dueño
         if (!GetInput(out PlayerInputData input))
             return;
+
+        // ─────────────────────────
+        // MOVIMIENTO
+        // ─────────────────────────
 
         Vector3 direction = new Vector3(
             input.MovementInput.x,
@@ -48,21 +64,34 @@ public class NetworkPlayer : NetworkBehaviour
             _moveSpeed *
             Runner.DeltaTime;
 
-        // Movimiento real
         _cc.Move(movement);
 
-        // Sincronizamos
         NetworkedPosition = transform.position;
 
         if (direction != Vector3.zero)
         {
-            NetworkedRotation = Quaternion.LookRotation(direction);
+            NetworkedRotation =
+                Quaternion.LookRotation(direction);
+        }
+
+        // ─────────────────────────
+        // DETECTAR DISPENSADOR
+        // ─────────────────────────
+
+        DetectNearbyDispenser();
+
+        // ─────────────────────────
+        // INTERACTUAR
+        // ─────────────────────────
+
+        if (input.PickupPressed)
+        {
+            Interact();
         }
     }
 
     public override void Render()
     {
-        // TODOS usan interpolación visual
         transform.position = Vector3.Lerp(
             transform.position,
             NetworkedPosition,
@@ -73,6 +102,167 @@ public class NetworkPlayer : NetworkBehaviour
             transform.rotation,
             NetworkedRotation,
             Runner.DeltaTime * 15f
+        );
+
+        UpdateHeldVisual();
+    }
+
+    // ─────────────────────────
+    // DETECCIÓN
+    // ─────────────────────────
+
+    private void DetectNearbyDispenser()
+    {
+        _nearbyDispenser = null;
+
+        Collider[] hits =
+            Physics.OverlapSphere(
+                transform.position,
+                _interactionRadius
+            );
+
+        float closestDistance = 999f;
+
+        foreach (Collider hit in hits)
+        {
+            IngredientDispenser dispenser =
+                hit.GetComponent<IngredientDispenser>();
+
+            if (dispenser == null)
+                continue;
+
+            float dist =
+                Vector3.Distance(
+                    transform.position,
+                    dispenser.transform.position
+                );
+
+            if (dist < closestDistance)
+            {
+                closestDistance = dist;
+                _nearbyDispenser = dispenser;
+            }
+        }
+    }
+
+    // ─────────────────────────
+    // INTERACCIÓN
+    // ─────────────────────────
+
+    private void Interact()
+    {
+        if (_nearbyDispenser == null)
+            return;
+
+        // Reemplaza automáticamente
+        HeldIngredient =
+            _nearbyDispenser.IngredientType;
+    }
+
+    // ─────────────────────────
+    // VISUAL
+    // ─────────────────────────
+
+    private void UpdateHeldVisual()
+    {
+        if (_lastVisualIngredient ==
+            HeldIngredient)
+            return;
+
+        _lastVisualIngredient =
+            HeldIngredient;
+
+        if (_heldVisual != null)
+        {
+            Destroy(_heldVisual);
+        }
+
+        if (HeldIngredient ==
+            IngredientType.None)
+            return;
+
+        GameObject visual =
+            GameObject.CreatePrimitive(
+                PrimitiveType.Cube
+            );
+
+        visual.transform.SetParent(
+            _holdPoint
+        );
+
+        visual.transform.localPosition =
+            Vector3.zero;
+
+        visual.transform.localRotation =
+            Quaternion.identity;
+
+        visual.transform.localScale =
+            Vector3.one * 0.4f;
+
+        Collider col =
+            visual.GetComponent<Collider>();
+
+        if (col != null)
+        {
+            Destroy(col);
+        }
+
+        Renderer renderer =
+            visual.GetComponent<Renderer>();
+
+        Material mat =
+            new Material(
+                Shader.Find(
+                    "Universal Render Pipeline/Lit"
+                )
+            );
+
+        renderer.material = mat;
+
+        switch (HeldIngredient)
+        {
+            case IngredientType.Red:
+                renderer.material.color =
+                    Color.red;
+                break;
+
+            case IngredientType.Blue:
+                renderer.material.color =
+                    Color.blue;
+                break;
+
+            case IngredientType.Yellow:
+                renderer.material.color =
+                    Color.yellow;
+                break;
+
+            case IngredientType.Green:
+                renderer.material.color =
+                    Color.green;
+                break;
+
+            case IngredientType.Orange:
+                renderer.material.color =
+                    new Color(1f, 0.5f, 0f);
+                break;
+
+            case IngredientType.Purple:
+                renderer.material.color =
+                    new Color(0.5f, 0f, 1f);
+                break;
+        }
+
+        _heldVisual = visual;
+    }
+
+    // DEBUG VISUAL
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+
+        Gizmos.DrawWireSphere(
+            transform.position,
+            _interactionRadius
         );
     }
 }
