@@ -1,8 +1,6 @@
 using Fusion;
 using UnityEngine;
 
-// SRP: SOLO carga escenas
-// OCP: implementa ISceneLoader, podemos hacer otras versiones
 public class FusionSceneLoader : MonoBehaviour, ISceneLoader
 {
     [SerializeField] private int _gameSceneIndex = 1;

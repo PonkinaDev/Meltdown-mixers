@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
-// SRP: solo maneja la UI de conexión
 public class ConnectionUI : MonoBehaviour
 {
     [Header("Botones")]
@@ -15,7 +13,6 @@ public class ConnectionUI : MonoBehaviour
 
     private void Start()
     {
-        // DIP: referenciamos NetworkManager por su instancia singleton
         _hostButton.onClick.AddListener(OnHostClicked);
         _joinButton.onClick.AddListener(OnJoinClicked);
 

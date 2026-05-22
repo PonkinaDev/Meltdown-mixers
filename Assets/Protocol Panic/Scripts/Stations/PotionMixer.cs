@@ -33,23 +33,18 @@ public class PotionMixer : NetworkBehaviour
         if (ingredient == IngredientType.None)
             return false;
 
-        // Si ya es secundario:
-        // bloquear
         if (IsSecondary(CurrentColor))
             return false;
 
-        // Mixer vacío
         if (CurrentColor == IngredientType.None)
         {
             CurrentColor = ingredient;
             return true;
         }
 
-        // Mismo color
         if (CurrentColor == ingredient)
             return false;
 
-        // Mezclar
         IngredientType result =
             Mix(CurrentColor, ingredient);
 
@@ -60,11 +55,7 @@ public class PotionMixer : NetworkBehaviour
 
         return true;
     }
-
-    // ─────────────────────────
-    // MEZCLAS
-    // ─────────────────────────
-
+    
     private IngredientType Mix(
         IngredientType a,
         IngredientType b
@@ -118,10 +109,6 @@ public class PotionMixer : NetworkBehaviour
             || type == IngredientType.Orange
             || type == IngredientType.Purple;
     }
-
-    // ─────────────────────────
-    // VISUAL
-    // ─────────────────────────
 
     private void UpdateVisual()
     {

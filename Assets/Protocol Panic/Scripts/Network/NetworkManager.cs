@@ -1,11 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Fusion;
 using Fusion.Sockets;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// SRP: SOLO maneja conexión y ciclo de vida del runner
 public class NetworkManager : MonoBehaviour, INetworkService, INetworkRunnerCallbacks
 {
     public static NetworkManager Instance { get; private set; }
@@ -13,17 +13,20 @@ public class NetworkManager : MonoBehaviour, INetworkService, INetworkRunnerCall
     [Header("Dependencies")]
     [SerializeField] private PlayerSpawner _playerSpawner;
     [SerializeField] private FusionSceneLoader _sceneLoader;
+    [SerializeField] private NetworkObject _avatarSelectionPrefab;
 
     private NetworkRunner _runner;
     public NetworkRunner Runner => _runner;
 
-    // Eventos
     public event Action OnConnectedAsHost;
     public event Action OnConnectedAsClient;
     public event Action<int> OnPlayerCountChanged;
     public event Action OnDisconnected;
 
     private readonly List<PlayerRef> _pendingSpawns = new();
+    private bool _avatarSelectionSpawned;
+    private bool _gameSceneReady;
+    private bool _selectionsReady;
 
     private void Awake()
     {
@@ -37,46 +40,36 @@ public class NetworkManager : MonoBehaviour, INetworkService, INetworkRunnerCall
         DontDestroyOnLoad(gameObject);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // HOST
-    // ─────────────────────────────────────────────────────────────────────────
+    private void OnEnable()
+    {
+        NetworkAvatarSelection.OnAllPlayersReady += HandleAllPlayersReady;
+    }
+
+    private void OnDisable()
+    {
+        NetworkAvatarSelection.OnAllPlayersReady -= HandleAllPlayersReady;
+    }
 
     public async void StartHost()
     {
         await LaunchRunner(GameMode.Host);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // CLIENT
-    // ─────────────────────────────────────────────────────────────────────────
-
     public async void StartClient()
     {
         await LaunchRunner(GameMode.Client);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // DISCONNECT
-    // ─────────────────────────────────────────────────────────────────────────
-
     public async void Disconnect()
     {
         if (_runner == null) return;
-
         await _runner.Shutdown();
-
         _runner = null;
-
         OnDisconnected?.Invoke();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // RUNNER
-    // ─────────────────────────────────────────────────────────────────────────
-
     private async System.Threading.Tasks.Task LaunchRunner(GameMode mode)
     {
-        // Si ya había runner, lo cerramos
         if (_runner != null)
         {
             await _runner.Shutdown();
@@ -85,31 +78,21 @@ public class NetworkManager : MonoBehaviour, INetworkService, INetworkRunnerCall
 
         if (this == null) return;
 
-        // Creamos runner
+        _avatarSelectionSpawned = false;
+        _gameSceneReady = false;
+        _selectionsReady = false;
+
         _runner = gameObject.AddComponent<NetworkRunner>();
-
         _runner.ProvideInput = true;
-
-        // IMPORTANTE:
-        // Registramos callbacks
         _runner.AddCallbacks(this);
 
         PlayerInputHandler inputHandler = GetComponent<PlayerInputHandler>();
-
         if (inputHandler != null)
-        {
             _runner.AddCallbacks(inputHandler);
-        }
 
-        // Scene Manager de Fusion
         var sceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>();
+        var currentScene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
 
-        // Escena actual
-        var currentScene = SceneRef.FromIndex(
-            SceneManager.GetActiveScene().buildIndex
-        );
-
-        // Configuración de la sesión
         var args = new StartGameArgs
         {
             GameMode     = mode,
@@ -119,7 +102,6 @@ public class NetworkManager : MonoBehaviour, INetworkService, INetworkRunnerCall
             PlayerCount  = 2
         };
 
-        // Iniciamos
         var result = await _runner.StartGame(args);
 
         if (!result.Ok)
@@ -128,183 +110,130 @@ public class NetworkManager : MonoBehaviour, INetworkService, INetworkRunnerCall
             return;
         }
 
-        // Inicializamos loader
         _sceneLoader.Initialize(_runner);
 
-        bool isHost = _runner.IsServer;
-
-        Debug.Log(
-            $"[NetworkManager] Conectado como: {(isHost ? "Host" : "Client")}"
-        );
-
-        if (isHost)
+        if (_runner.IsServer)
             OnConnectedAsHost?.Invoke();
         else
             OnConnectedAsClient?.Invoke();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PLAYER JOIN
-    // ─────────────────────────────────────────────────────────────────────────
-
-    void INetworkRunnerCallbacks.OnPlayerJoined(
-        NetworkRunner runner,
-        PlayerRef player
-    )
+    void INetworkRunnerCallbacks.OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
-        Debug.Log($"[NetworkManager] Jugador conectado: {player}");
+        _pendingSpawns.Add(player);
+        OnPlayerCountChanged?.Invoke(_pendingSpawns.Count);
 
         if (!runner.IsServer) return;
 
-        // Guardamos jugador
-        _pendingSpawns.Add(player);
-
-        // Actualizamos UI
-        OnPlayerCountChanged?.Invoke(_pendingSpawns.Count);
-
-        // Si hay 2 jugadores -> cargar juego
-        if (_pendingSpawns.Count >= 2)
-        {
-            Invoke(nameof(TriggerSceneLoad), 1.5f);
-        }
+        if (_pendingSpawns.Count >= 2 && !_avatarSelectionSpawned)
+            SpawnAvatarSelection();
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // SCENE LOADED
-    // ─────────────────────────────────────────────────────────────────────────
 
     void INetworkRunnerCallbacks.OnSceneLoadDone(NetworkRunner runner)
     {
-        Debug.Log("[NetworkManager] Escena cargada.");
-
         if (!runner.IsServer) return;
 
         int currentScene = SceneManager.GetActiveScene().buildIndex;
-
-        // Solo en Game.scene
         if (currentScene != 1) return;
 
-        // Spawn jugadores
+        Debug.Log("[NetworkManager] OnSceneLoadDone — escena de juego lista");
+        _gameSceneReady = true;
+        TrySpawnPlayers(runner);
+    }
+
+    void INetworkRunnerCallbacks.OnPlayerLeft(NetworkRunner runner, PlayerRef player)
+    {
+        _pendingSpawns.Remove(player);
+        OnPlayerCountChanged?.Invoke(_pendingSpawns.Count);
+
+        if (!runner.IsServer) return;
+        _playerSpawner.DespawnPlayer(runner, player);
+    }
+
+    private void SpawnAvatarSelection()
+    {
+        _avatarSelectionSpawned = true;
+        Debug.Log("[NetworkManager] Spawneando AvatarSelection");
+        _runner.Spawn(_avatarSelectionPrefab);
+    }
+
+    private void HandleAllPlayersReady()
+    {
+        Debug.Log("[NetworkManager] Todos listos, cargando escena");
+        _selectionsReady = true;
+        _sceneLoader.LoadGameScene();
+    }
+
+    private void TrySpawnPlayers(NetworkRunner runner)
+    {
+        if (!_gameSceneReady || !_selectionsReady)
+        {
+            Debug.Log($"[NetworkManager] TrySpawnPlayers esperando — gameSceneReady:{_gameSceneReady} selectionsReady:{_selectionsReady}");
+
+            if (_gameSceneReady && !_selectionsReady)
+                StartCoroutine(WaitForSelectionsAndSpawn(runner));
+
+            return;
+        }
+
+        DoSpawnPlayers(runner);
+    }
+
+    private IEnumerator WaitForSelectionsAndSpawn(NetworkRunner runner)
+    {
+        Debug.Log("[NetworkManager] Esperando selecciones persistidas...");
+        float timeout = 5f;
+
+        while (timeout > 0f)
+        {
+            bool allReady = true;
+            foreach (PlayerRef player in _pendingSpawns)
+            {
+                if (NetworkAvatarSelection.GetPersistedSelection(player) == -1)
+                {
+                    allReady = false;
+                    break;
+                }
+            }
+
+            if (allReady)
+            {
+                Debug.Log("[NetworkManager] Selecciones recibidas, spawneando jugadores");
+                DoSpawnPlayers(runner);
+                yield break;
+            }
+
+            timeout -= Time.deltaTime;
+            yield return null;
+        }
+
+        Debug.LogWarning("[NetworkManager] Timeout esperando selecciones — spawneando con fallback");
+        DoSpawnPlayers(runner);
+    }
+
+    private void DoSpawnPlayers(NetworkRunner runner)
+    {
         foreach (PlayerRef player in _pendingSpawns)
         {
+            Debug.Log($"[NetworkManager] Spawneando player {player}");
             _playerSpawner.SpawnPlayer(runner, player);
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PLAYER LEFT
-    // ─────────────────────────────────────────────────────────────────────────
-
-    void INetworkRunnerCallbacks.OnPlayerLeft(
-        NetworkRunner runner,
-        PlayerRef player
-    )
-    {
-        _pendingSpawns.Remove(player);
-
-        _playerSpawner.DespawnPlayer(runner, player);
-
-        OnPlayerCountChanged?.Invoke(_pendingSpawns.Count);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // LOAD GAME SCENE
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void TriggerSceneLoad()
-    {
-        _sceneLoader.LoadGameScene();
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // CALLBACKS VACÍOS REQUERIDOS
-    // ─────────────────────────────────────────────────────────────────────────
-
     void INetworkRunnerCallbacks.OnConnectedToServer(NetworkRunner runner) { }
-
-    void INetworkRunnerCallbacks.OnDisconnectedFromServer(
-        NetworkRunner runner,
-        NetDisconnectReason reason
-    )
-    {
-        OnDisconnected?.Invoke();
-    }
-
-    void INetworkRunnerCallbacks.OnConnectFailed(
-        NetworkRunner runner,
-        NetAddress remoteAddress,
-        NetConnectFailedReason reason
-    ) { }
-
-    void INetworkRunnerCallbacks.OnConnectRequest(
-        NetworkRunner runner,
-        NetworkRunnerCallbackArgs.ConnectRequest request,
-        byte[] token
-    ) { }
-
-    void INetworkRunnerCallbacks.OnCustomAuthenticationResponse(
-        NetworkRunner runner,
-        Dictionary<string, object> data
-    ) { }
-
-    void INetworkRunnerCallbacks.OnHostMigration(
-        NetworkRunner runner,
-        HostMigrationToken hostMigrationToken
-    ) { }
-
-    void INetworkRunnerCallbacks.OnInput(
-        NetworkRunner runner,
-        NetworkInput input
-    ) { }
-
-    void INetworkRunnerCallbacks.OnInputMissing(
-        NetworkRunner runner,
-        PlayerRef player,
-        NetworkInput input
-    ) { }
-
-    void INetworkRunnerCallbacks.OnObjectEnterAOI(
-        NetworkRunner runner,
-        NetworkObject obj,
-        PlayerRef player
-    ) { }
-
-    void INetworkRunnerCallbacks.OnObjectExitAOI(
-        NetworkRunner runner,
-        NetworkObject obj,
-        PlayerRef player
-    ) { }
-
-    void INetworkRunnerCallbacks.OnReliableDataProgress(
-        NetworkRunner runner,
-        PlayerRef player,
-        ReliableKey key,
-        float progress
-    ) { }
-
-    void INetworkRunnerCallbacks.OnReliableDataReceived(
-        NetworkRunner runner,
-        PlayerRef player,
-        ReliableKey key,
-        ArraySegment<byte> data
-    ) { }
-
-    void INetworkRunnerCallbacks.OnSceneLoadStart(
-        NetworkRunner runner
-    ) { }
-
-    void INetworkRunnerCallbacks.OnSessionListUpdated(
-        NetworkRunner runner,
-        List<SessionInfo> sessionList
-    ) { }
-
-    void INetworkRunnerCallbacks.OnShutdown(
-        NetworkRunner runner,
-        ShutdownReason shutdownReason
-    ) { }
-
-    void INetworkRunnerCallbacks.OnUserSimulationMessage(
-        NetworkRunner runner,
-        SimulationMessagePtr message
-    ) { }
+    void INetworkRunnerCallbacks.OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) => OnDisconnected?.Invoke();
+    void INetworkRunnerCallbacks.OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
+    void INetworkRunnerCallbacks.OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
+    void INetworkRunnerCallbacks.OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
+    void INetworkRunnerCallbacks.OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
+    void INetworkRunnerCallbacks.OnInput(NetworkRunner runner, NetworkInput input) { }
+    void INetworkRunnerCallbacks.OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
+    void INetworkRunnerCallbacks.OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
+    void INetworkRunnerCallbacks.OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
+    void INetworkRunnerCallbacks.OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress) { }
+    void INetworkRunnerCallbacks.OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ArraySegment<byte> data) { }
+    void INetworkRunnerCallbacks.OnSceneLoadStart(NetworkRunner runner) { }
+    void INetworkRunnerCallbacks.OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) { }
+    void INetworkRunnerCallbacks.OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
+    void INetworkRunnerCallbacks.OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
 }

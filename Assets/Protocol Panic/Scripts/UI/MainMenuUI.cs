@@ -1,9 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
-// SRP: solo maneja la UI del menú
-// DIP: depende de INetworkService, no de NetworkManager directamente
 public class MainMenuUI : MonoBehaviour
 {
     [Header("Paneles")]
@@ -24,42 +21,46 @@ public class MainMenuUI : MonoBehaviour
     // DIP: dependemos de la interfaz, no de la clase concreta
     private INetworkService _networkService;
 
-    private void Start()
+private void Start()
+{
+    _networkService = FindFirstObjectByType<NetworkManager>();
+
+    if (_networkService == null)
     {
-        // Buscamos la implementación de INetworkService
-        _networkService = FindFirstObjectByType<NetworkManager>();
-
-        if (_networkService == null)
-        {
-            Debug.LogError("[MainMenuUI] No se encontró INetworkService.");
-            return;
-        }
-
-        // OCP: nos suscribimos a eventos, no preguntamos estado constantemente
-        _networkService.OnConnectedAsHost    += HandleConnectedAsHost;
-        _networkService.OnConnectedAsClient  += HandleConnectedAsClient;
-        _networkService.OnPlayerCountChanged += HandlePlayerCountChanged;
-        _networkService.OnDisconnected       += HandleDisconnected;
-
-        _btnHost.onClick.AddListener(OnHostClicked);
-        _btnJoin.onClick.AddListener(OnJoinClicked);
-        _btnQuit.onClick.AddListener(OnQuitClicked);
-        _btnCancel.onClick.AddListener(OnCancelClicked);
-
-        ShowPanel(_panelMainMenu);
+        Debug.LogError("[MainMenuUI] No se encontró INetworkService.");
+        return;
     }
 
-    private void OnDestroy()
-    {
-        // Limpieza de eventos para evitar memory leaks
-        if (_networkService == null) return;
-        _networkService.OnConnectedAsHost    -= HandleConnectedAsHost;
-        _networkService.OnConnectedAsClient  -= HandleConnectedAsClient;
-        _networkService.OnPlayerCountChanged -= HandlePlayerCountChanged;
-        _networkService.OnDisconnected       -= HandleDisconnected;
-    }
+    _networkService.OnConnectedAsHost    += HandleConnectedAsHost;
+    _networkService.OnConnectedAsClient  += HandleConnectedAsClient;
+    _networkService.OnPlayerCountChanged += HandlePlayerCountChanged;
+    _networkService.OnDisconnected       += HandleDisconnected;
+    AvatarSelectionUI.OnShown            += HideAllPanels; // ← nuevo
 
-    // ─── Botones ─────────────────────────────────────────────────────────────
+    _btnHost.onClick.AddListener(OnHostClicked);
+    _btnJoin.onClick.AddListener(OnJoinClicked);
+    _btnQuit.onClick.AddListener(OnQuitClicked);
+    _btnCancel.onClick.AddListener(OnCancelClicked);
+
+    ShowPanel(_panelMainMenu);
+}
+
+private void OnDestroy()
+{
+    if (_networkService == null) return;
+    _networkService.OnConnectedAsHost    -= HandleConnectedAsHost;
+    _networkService.OnConnectedAsClient  -= HandleConnectedAsClient;
+    _networkService.OnPlayerCountChanged -= HandlePlayerCountChanged;
+    _networkService.OnDisconnected       -= HandleDisconnected;
+    AvatarSelectionUI.OnShown            -= HideAllPanels; // ← nuevo
+}
+
+private void HideAllPanels()
+{
+    _panelMainMenu.SetActive(false);
+    _panelLobby.SetActive(false);
+    _panelLoading.SetActive(false);
+}
 
     private void OnHostClicked()
     {
@@ -82,8 +83,6 @@ public class MainMenuUI : MonoBehaviour
         _networkService.Disconnect();
         ShowPanel(_panelMainMenu);
     }
-
-    // ─── Handlers de eventos ─────────────────────────────────────────────────
 
     private void HandleConnectedAsHost()
     {
@@ -113,8 +112,6 @@ public class MainMenuUI : MonoBehaviour
         ShowPanel(_panelMainMenu);
         SetStatus("Desconectado");
     }
-
-    // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private void ShowPanel(GameObject panel)
     {
