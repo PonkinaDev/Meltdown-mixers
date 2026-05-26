@@ -3,7 +3,27 @@ guid: 3be1835022a063e42a0fa4445b7cd3bc
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: appliance_stove_induction_Solid_089
+    second: {fileID: 2100000, guid: 2e7aed0cd9617ad41b5e6ba2ac75189e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: model_mat25
+    second: {fileID: 2100000, guid: cc0fc8e8350916c4bbd925900691efb0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: model_mat26
+    second: {fileID: 2100000, guid: f3278c326a5067f4f96066a3a923b5a5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: model_mat27
+    second: {fileID: 2100000, guid: 9c9e187605d210a4ca94b3050c390839, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
