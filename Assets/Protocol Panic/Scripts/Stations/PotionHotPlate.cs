@@ -2,7 +2,7 @@ using Fusion;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PotionCauldron : NetworkBehaviour
+public class PotionHotPlate : NetworkBehaviour
 {
     [Header("Visual")]
     [SerializeField] private Material _potionMaterial;

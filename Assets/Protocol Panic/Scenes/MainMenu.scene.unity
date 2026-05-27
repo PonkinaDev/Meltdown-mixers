@@ -1453,7 +1453,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Mixers
+  m_text: Potions
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 016f502beac9e53428a1c805ee87881a, type: 2}
   m_sharedMaterial: {fileID: 2857296036035335680, guid: 016f502beac9e53428a1c805ee87881a, type: 2}
@@ -1848,7 +1848,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Meltdown
+  m_text: Chemical
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 016f502beac9e53428a1c805ee87881a, type: 2}
   m_sharedMaterial: {fileID: 2857296036035335680, guid: 016f502beac9e53428a1c805ee87881a, type: 2}
@@ -2264,7 +2264,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: wait
+  m_text: Waiting for players...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 220097618afad5f4fb8ff83ed9ef2e37, type: 2}
   m_sharedMaterial: {fileID: 5304950827253899979, guid: 220097618afad5f4fb8ff83ed9ef2e37, type: 2}

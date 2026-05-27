@@ -17,7 +17,7 @@ public class PlayerInteractableDetector : MonoBehaviour
         private set;
     }
 
-    public PotionCauldron NearbyCauldron
+    public PotionHotPlate NearbyHotPlate
     {
         get;
         private set;
@@ -49,8 +49,8 @@ public class PlayerInteractableDetector : MonoBehaviour
         NearbyMixer =
             FindClosest<PotionMixer>(hits);
 
-        NearbyCauldron =
-            FindClosest<PotionCauldron>(hits);
+        NearbyHotPlate =
+            FindClosest<PotionHotPlate>(hits);
 
         NearbyDeliveryZone =
             FindClosest<DeliveryZone>(hits);

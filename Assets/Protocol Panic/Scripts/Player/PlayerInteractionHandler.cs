@@ -22,7 +22,7 @@ public class PlayerInteractionHandler : MonoBehaviour
         if (HandleDeliveryInteraction())
             return;
 
-        if (HandleCauldronInteraction())
+        if (HandleHotPlateInteraction())
             return;
 
         if (HandleMixerInteraction())
@@ -65,15 +65,15 @@ public class PlayerInteractionHandler : MonoBehaviour
         return true;
     }
 
-    private bool HandleCauldronInteraction()
+    private bool HandleHotPlateInteraction()
     {
-        if (_detector.NearbyCauldron == null)
+        if (_detector.NearbyHotPlate == null)
             return false;
 
         if (!_player.HasIngredient())
         {
             bool success =
-                _detector.NearbyCauldron.TryTakePotion(
+                _detector.NearbyHotPlate.TryTakePotion(
                     out IngredientType potion,
                     out PotionState state
                 );
@@ -91,7 +91,7 @@ public class PlayerInteractionHandler : MonoBehaviour
         }
 
         bool placed =
-            _detector.NearbyCauldron.TryAddPotion(
+            _detector.NearbyHotPlate.TryAddPotion(
                 _player.HeldIngredient
             );
 
