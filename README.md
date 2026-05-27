@@ -37,7 +37,7 @@ Juego cooperativo en tiempo real de tipo *científico caótico*, desarrollado en
 
 El modelo de red es **Player Host con Photon Fusion 2**: quien crea la sala lanza el runner en modo `Host`, sincronizando el estado de todos los objetos de red. El cliente se conecta usando la infraestructura de matchmaking de Photon y ambos jugadores ingresan a la partida tras completar la selección de avatar.
 
-![Gameplay overview](Protocol-Panic/Assets/chemical%20potions/Art/documentation%20images/gameplay_overview.png)
+![Gameplay overview](Protocol-Panic/Assets/chemical%20potions/Art/documentation%20images/gameplay_overview.PNG)
 
 ---
 
