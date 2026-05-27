@@ -37,7 +37,7 @@ Juego cooperativo en tiempo real de tipo *científico caótico*, desarrollado en
 
 El modelo de red es **Player Host con Photon Fusion 2**: quien crea la sala lanza el runner en modo `Host`, sincronizando el estado de todos los objetos de red. El cliente se conecta usando la infraestructura de matchmaking de Photon y ambos jugadores ingresan a la partida tras completar la selección de avatar.
 
-![Gameplay overview](Protocol-Panic/Assets/chemical%20potions/Art/documentation%20images/gameplay_overview.PNG)
+![Gameplay overview](images/gameplay_overview.PNG)
 
 ---
 
@@ -67,7 +67,7 @@ El modelo de red es **Player Host con Photon Fusion 2**: quien crea la sala lanz
 4. La pantalla pasará al panel de lobby mostrando **"Sala creada — esperando jugador..."**.
 5. Cuando el segundo jugador se conecte, ambos serán llevados automáticamente a la pantalla de **selección de avatar**.
 
-![Main menu](documentation%20images/main_menu.png)
+![Main menu](images/menu.jpeg)
 
 ### Cliente — Unirse a una Sala
 
@@ -82,7 +82,7 @@ El modelo de red es **Player Host con Photon Fusion 2**: quien crea la sala lanz
 
 Una vez que ambos jugadores estén conectados, se activa la pantalla de selección de avatar. Cada jugador elige un científico disponible y presiona **"Listo"**. Cuando ambos confirman su selección, la partida inicia automáticamente.
 
-![Avatar selection](documentation%20images/avatar_selection.png)
+![Avatar](images/avatar.jpeg)
 
 ---
 
@@ -152,8 +152,7 @@ Los jugadores cooperan para completar pedidos que aparecen en el tablero de órd
 3. Transferir el resultado al **mechero de laboratorio** para calentarlo.
 4. Entregarlo en la **zona de entrega** antes de que se queme.
 
-![Gameplay screenshot](documentation%20images/gameplay_screenshot.png)
-
+![Gameplay screenshot](images/gameplay_screenshot.PNG)
 ### Estaciones
 
 - **Dispenser** — suministra reactivos de tipo primario (Rojo, Azul, Amarillo).
@@ -205,8 +204,6 @@ Los slots de selección se replican mediante `NetworkArray<int>` (índice de ava
 
 Las selecciones se persisten en el diccionario estático `PersistedSelections` para que el `PlayerSpawner` pueda instanciar el prefab correcto al cargar la nueva escena.
 
-![Avatar selection detail](documentation%20images/avatar_selection_detail.png)
-
 ---
 
 ## Flujo Completo del Juego
@@ -238,7 +235,7 @@ Las selecciones se persisten en el diccionario estático `PersistedSelections` p
                              runner.Shutdown() → SceneManager.LoadScene(0)
 ```
 
-![Victory screen](documentation%20images/victory_screen.png)
+![Victoria](images/win.jpeg)
 
 **Condiciones especiales:**
 
