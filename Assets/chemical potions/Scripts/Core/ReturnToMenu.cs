@@ -9,6 +9,8 @@ public class ReturnToMenu : MonoBehaviour
 
     public async void Return()
     {
+        NetworkAvatarSelection.ClearPersistedSelections();
+
         if (NetworkManager.Instance != null)
         {
             NetworkRunner runner =
@@ -18,6 +20,8 @@ public class ReturnToMenu : MonoBehaviour
             {
                 await runner.Shutdown();
             }
+
+            Destroy(NetworkManager.Instance.gameObject);
         }
 
         SceneManager.LoadScene(_menuSceneIndex);

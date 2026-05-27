@@ -42,7 +42,7 @@ public class OrderBoardUI : MonoBehaviour
             return;
 
         _totalMoneyText.text =
-            $"Money: ${_orderManager.TotalMoney}";
+            $"X {_orderManager.TotalMoney}";
     }
 
     private void RebuildCards()
