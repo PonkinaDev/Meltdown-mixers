@@ -20,7 +20,6 @@ public static event Action OnShown;
     public static AvatarSelectionUI Instance { get; private set; }
     
 
-// AvatarSelectionUI.cs — reemplaza Awake y Start completos
 private void Awake()
 {
     Instance = this;
@@ -29,7 +28,7 @@ private void Awake()
     _waitingForOthersPanel.SetActive(false);
     gameObject.SetActive(false);
 
-    NetworkAvatarSelection.OnInstanceReady += HandleInstanceReady; // ← suscripción estática, funciona inactivo
+    NetworkAvatarSelection.OnInstanceReady += HandleInstanceReady; 
 }
 
 private void Start() { }
@@ -43,7 +42,7 @@ public void Show(IAvatarSelectionService service, NetworkRunner runner)
     BuildSlots();
     gameObject.SetActive(true);
     Refresh();
-    OnShown?.Invoke(); // ← avisa que ya está visible
+    OnShown?.Invoke();
 }
 
 public void Hide()
@@ -71,7 +70,7 @@ public void Hide()
 private void Refresh()
 {
     if (_runner == null || _slots == null) return;
-    if (_isReady) return; // ← bloquea refresh tras confirmar listo
+    if (_isReady) return; 
 
     var localPlayer = _runner.LocalPlayer;
     int localSelection = _service.GetPlayerSelection(localPlayer);

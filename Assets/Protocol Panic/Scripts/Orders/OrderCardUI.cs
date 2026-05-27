@@ -17,7 +17,6 @@ public class OrderCardUI : MonoBehaviour
 
         if (_iconDB == null)
         {
-            Debug.LogError("[OrderCardUI] IngredientIconDatabase NO asignado en el prefab");
             return;
         }
 
@@ -25,7 +24,6 @@ public class OrderCardUI : MonoBehaviour
 
         if (icon == null)
         {
-            Debug.LogError($"[OrderCardUI] No hay sprite asignado para {type} en el database");
             return;
         }
 

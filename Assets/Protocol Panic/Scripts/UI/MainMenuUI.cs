@@ -18,7 +18,6 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _txtStatus;
     [SerializeField] private TextMeshProUGUI _txtPlayers;
 
-    // DIP: dependemos de la interfaz, no de la clase concreta
     private INetworkService _networkService;
 
 private void Start()
@@ -35,7 +34,7 @@ private void Start()
     _networkService.OnConnectedAsClient  += HandleConnectedAsClient;
     _networkService.OnPlayerCountChanged += HandlePlayerCountChanged;
     _networkService.OnDisconnected       += HandleDisconnected;
-    AvatarSelectionUI.OnShown            += HideAllPanels; // ← nuevo
+    AvatarSelectionUI.OnShown            += HideAllPanels; 
 
     _btnHost.onClick.AddListener(OnHostClicked);
     _btnJoin.onClick.AddListener(OnJoinClicked);
@@ -52,7 +51,7 @@ private void OnDestroy()
     _networkService.OnConnectedAsClient  -= HandleConnectedAsClient;
     _networkService.OnPlayerCountChanged -= HandlePlayerCountChanged;
     _networkService.OnDisconnected       -= HandleDisconnected;
-    AvatarSelectionUI.OnShown            -= HideAllPanels; // ← nuevo
+    AvatarSelectionUI.OnShown            -= HideAllPanels; 
 }
 
 private void HideAllPanels()

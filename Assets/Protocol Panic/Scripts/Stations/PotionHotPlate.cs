@@ -7,7 +7,6 @@ public class PotionHotPlate : NetworkBehaviour
     [Header("Visual")]
     [SerializeField] private Material _potionMaterial;
 
-    // Arrastra aquí SOLO el objeto del líquido (por ejemplo, Element 1)
     [SerializeField] private GameObject _liquidVisual;
 
     [Header("Progress")]
